@@ -44,20 +44,20 @@ Key fields include:
 6. Agent details are extracted and duplicate agents are removed.
 7. Apply to Each processes each unique agent.
 8. The workflow filters the open cases belonging to the current agent.
-9. Select formats Case ID, Age and Action Status.
+9. Select formats Case ID, Age, and Action Status.
 10. The case array is consolidated into one readable message.
 11. Microsoft Teams sends a personalized reminder to each agent.
 12. After agent processing is complete, management receives one consolidated summary.
 
 ## Workflow Overview
 
-![Power Automate Flow](screenshots/flow-overview.png)
+![Power Automate Flow](flow-overview.png)
 
 ## Agent Reminder
 
 Each agent receives one consolidated reminder containing their open cases and aging status.
 
-![Agent Reminder](screenshots/agent-reminder.png)
+![Agent Reminder](agent-reminder.png)
 
 Example output:
 
@@ -73,27 +73,27 @@ Management receives one daily summary containing:
 - Action Required (>5 Days)
 - Cases Within 5 Days
 
-![Manager Summary](screenshots/manager-summary.png)
+![Manager Summary](manager-summary.png)
 
 ## Testing Approach
 
 The project uses 25 synthetic agents to simulate a multi-agent support environment.
 
-During testing, all synthetic agents were temporarily mapped to a single authorized Microsoft Teams test account. This allowed dynamic routing, agent-level filtering, case-aging logic, and personalized reminders to be validated without requiring 25 real Microsoft 365 accounts.
+During development and testing, all synthetic agent records were temporarily mapped to a single authorized Microsoft Teams test account. This allowed the dynamic routing, agent-level filtering, case-aging logic, and personalized reminder workflow to be validated without requiring 25 real Microsoft 365 user accounts.
 
-In a production implementation, each agent would have a valid organizational email/UPN and the workflow would dynamically route each reminder to the appropriate agent.
+In a production implementation, each agent would have their own valid organizational email/UPN, and the workflow would dynamically route each reminder to the corresponding agent.
 
-The public dataset uses fictional `@example.com` email addresses.
+The public dataset uses fictional `@example.com` email addresses and contains no real employee or customer information.
 
 ## Process Improvement
 
 ### AS-IS
 
-Agents or managers manually review open cases and determine which cases require attention.
+Agents or managers manually review open cases and determine which cases require attention based on case age.
 
 ### TO-BE
 
-`Case Data → Filter Open Cases → Calculate Aging → Identify Action Required Cases → Group by Agent → Agent Reminder → Manager Summary`
+`Case Data → Filter Open Cases → Calculate Aging → Identify Action Required Cases → Group by Agent → Send Agent Reminders → Send Manager Summary`
 
 The automated process reduces repetitive monitoring and provides proactive visibility into aging cases.
 
@@ -115,9 +115,16 @@ The automated process reduces repetitive monitoring and provides proactive visib
 
 Excel dates returned by the connector were handled using Excel serial-date conversion before calculating case age.
 
-Cases were classified dynamically using the five-day business rule.
+Cases were dynamically classified according to the five-day business rule:
 
-The formatted case array was consolidated using `join()` so each agent receives one Teams message containing all of their open cases rather than separate messages for individual cases.
+- Age > 5 days → `ACTION REQUIRED`
+- Age ≤ 5 days → `OPEN`
+
+The formatted case array was consolidated using the Power Automate `join()` function so each agent receives one Teams message containing all of their open cases rather than separate messages for individual cases.
+
+Unique agent records were identified before the agent-level loop so the workflow could process each agent once and generate a personalized case list.
+
+The manager summary was placed outside the agent loop so it executes only once after agent-level processing is completed.
 
 ## Skills Demonstrated
 
@@ -126,10 +133,11 @@ The formatted case array was consolidated using `join()` so each agent receives 
 - Workflow Automation
 - Business Rule Implementation
 - Data Filtering & Transformation
-- Operational Reporting
 - Case Aging Analysis
-- Dynamic Routing
+- Dynamic Recipient Routing
+- Operational Reporting
 - Microsoft Power Automate
+- Microsoft Teams Integration
 - Testing & Troubleshooting
 
 ## Data Privacy
